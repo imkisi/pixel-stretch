@@ -13,7 +13,7 @@ Instead of a standard video stream, Pixel Stretch slices random vertical fragmen
 
 ## Live Demo
 
-👉 [Insert your GitHub Pages link here]
+https://imkisi.github.io/pixel-stretch/
 
 ## Installation & Local Usage
 
@@ -21,6 +21,6 @@ Because the project utilizes webcam streams via `getUserMedia`, modern browsers 
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/yourusername/stratacam.git](https://github.com/imkisi/pixel-stretch.git)
+   git clone [https://github.com/imkisi/pixel-stretch.git](https://github.com/imkisi/pixel-stretch.git)
    cd pixel-stretch
    ```

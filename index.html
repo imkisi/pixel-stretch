@@ -101,7 +101,11 @@
         }
 
         navigator.mediaDevices.getUserMedia({ 
-            video: { width: { ideal: width }, height: { ideal: height } } 
+            video: { 
+                width: { ideal: width }, 
+                height: { ideal: height },
+                facingMode: { ideal: 'environment' }
+            } 
         })
         .then(stream => {
             video.srcObject = stream;
