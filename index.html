@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuous 1s Stretch Camera with Capture</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f6f3ec;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .camera-container {
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #captureBtn {
+            width: 80px;
+            height: 80px;
+            position: absolute;
+            bottom: 30px;
+            background: #fff;
+            border: 1px solid #f4f1e5;
+            border-radius: 120px;
+            cursor: pointer;
+        }
+
+        #captureBtn:hover {
+            background: #f4f1e5;
+            transform: scale(1.1);
+        }
+
+        #captureBtn:active {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="camera-container">
+        <canvas id="glitchCanvas"></canvas>
+        <button id="captureBtn"></button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('glitchCanvas');
+        const ctx = canvas.getContext('2d');
+        const captureBtn = document.getElementById('captureBtn');
+
+        const width = 720;
+        const height = 1280;
+        canvas.width = width;
+        canvas.height = height;
+
+        let video = document.createElement('video');
+        video.muted = true;
+        video.playsInline = true;
+
+        class GlitchBlock {
+            constructor() {
+                this.vW = video.videoWidth;
+                this.vH = video.videoHeight;
+                if (!this.vW) return null;
+
+                this.sliceW = Math.max(1, Math.floor(Math.random() * 5)); 
+                this.sliceH = Math.max(40, Math.floor(Math.random() * (this.vH * 0.6))); 
+                
+                this.sliceX = Math.floor(Math.random() * (this.vW - this.sliceW));
+                this.sliceY = Math.floor(Math.random() * (this.vH - this.sliceH));
+
+                this.destW = Math.random() > 0.4 ? width : Math.floor(Math.random() * (width * 0.7)) + (width * 0.3);
+                this.destH = this.sliceH; 
+                
+                this.destX = Math.random() > 0.5 ? 0 : Math.floor(Math.random() * (width - this.destW));
+                this.destY = Math.floor(Math.random() * (height - this.destH));
+            }
+
+            draw(ctx) {
+                ctx.drawImage(
+                    video, 
+                    this.sliceX, this.sliceY, this.sliceW, this.sliceH, 
+                    this.destX, this.destY, this.destW, this.destH      
+                );
+            }
+        }
+
+        navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: width }, height: { ideal: height } } 
+        })
+        .then(stream => {
+            video.srcObject = stream;
+            video.play();
+            video.addEventListener('playing', () => {
+                requestAnimationFrame(tick);
+                setInterval(generateGlitchBurst, 1000);
+            });
+        });
+
+        let isBackgroundFilled = false;
+
+        function tick() {
+            if (video.readyState >= 2 && video.videoWidth > 0) {
+                if (!isBackgroundFilled) {
+                    ctx.drawImage(
+                        video, 
+                        Math.floor(video.videoWidth / 2), 0, 1, video.videoHeight, 
+                        0, 0, width, height 
+                    );
+                    isBackgroundFilled = true;
+                    generateGlitchBurst();
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function generateGlitchBurst() {
+            if (video.readyState < 2 || video.videoWidth === 0) return;
+
+            const blocksInBurst = Math.floor(Math.random() * 6) + 5; 
+            for (let i = 0; i < blocksInBurst; i++) {
+                const block = new GlitchBlock();
+                if (block) {
+                    block.draw(ctx);
+                }
+            }
+        }
+
+        captureBtn.addEventListener('click', () => {
+            const imageType = 'image/png';
+            const dataURL = canvas.toDataURL(imageType);
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `stratacam-export-${timestamp}.png`;
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = dataURL;
+            downloadLink.download = filename;
+
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+    </script>
+</body>
+</html>
