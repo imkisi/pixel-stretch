@@ -146,7 +146,7 @@
             const dataURL = canvas.toDataURL(imageType);
 
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `stratacam-export-${timestamp}.png`;
+            const filename = `pixel-stretch-${timestamp}.png`;
 
             const downloadLink = document.createElement('a');
             downloadLink.href = dataURL;
